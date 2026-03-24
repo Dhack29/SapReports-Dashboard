@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              name="dynamic_report" 
+              pageWidth="595" pageHeight="842" columnWidth="555" 
+              leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" 
+              uuid="e7e59600-9856-42d4-a169-7ee47530d1c8">
+	
+    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="PostgresAdapter"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	
+    <!-- Styles for alternating rows -->
+    <style name="Zebra" mode="Opaque" backcolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 1]]></conditionExpression>
+			<style mode="Opaque" backcolor="#F4F6F6"/>
+		</conditionalStyle>
+	</style>
+
+	<queryString>
+		<![CDATA[SELECT distinct mapped_rs_code, count(*) as count FROM warranty_dipek group by mapped_rs_code]]>
+	</queryString>
+	
+    <field name="mapped_rs_code" class="java.lang.String"/>
+	<field name="count" class="java.lang.Long"/>
+	
+    <!-- Variables for statistics -->
+    <variable name="TotalRecords" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{count}]]></variableExpression>
+    </variable>
+
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	
+    <title>
+		<band height="120" splitType="Stretch">
+			<!-- Header Background Gradient / Colors -->
+			<rectangle>
+				<reportElement x="-20" y="-20" width="595" height="140" backcolor="#1A252F" uuid="09f30b9f-d31d-4033-b2db-ff3e670ca3bf"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+            <!-- Decorative Accent Line -->
+            <rectangle>
+				<reportElement x="-20" y="115" width="595" height="5" backcolor="#3498DB" uuid="a65f8c90-9cde-4775-ad34-e918548bbca1"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			
+            <!-- Fake Logo Box -->
+            <rectangle>
+				<reportElement x="0" y="10" width="70" height="70" backcolor="#2980B9" uuid="f43b35dc-3d84-48f8-b5de-8cadbf27b9c9"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+            <staticText>
+				<reportElement x="0" y="10" width="70" height="70" forecolor="#FFFFFF" uuid="d6e04d7c-8eeb-48b4-8e10-388e4db7c1f8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CR]]></text>
+			</staticText>
+
+            <!-- Titles -->
+			<staticText>
+				<reportElement x="90" y="20" width="465" height="40" forecolor="#FFFFFF" uuid="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="28" isBold="true"/>
+				</textElement>
+				<text><![CDATA[EXECUTIVE REPORT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="90" y="60" width="465" height="20" forecolor="#BDC3C7" uuid="33fdbbb8-2a04-4e2b-baa3-f2323cc9838d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Comprehensive Warranty & RS Code Data Analysis]]></text>
+			</staticText>
+		</band>
+	</title>
+	
+    <pageHeader>
+		<band height="50" splitType="Stretch">
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="355" y="15" width="200" height="20" forecolor="#7F8C8D" uuid="53460fd5-6902-4fc5-91db-d32e5bdbeb60"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date: " + new java.text.SimpleDateFormat("MMM dd, yyyy").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="15" width="200" height="20" forecolor="#34495E" uuid="fc5bcbfe-1ba8-4bc2-89cd-59bd444ffb01"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Report Section: Data Extract]]></text>
+			</staticText>
+            <line>
+				<reportElement x="0" y="40" width="555" height="1" forecolor="#E5E7E9" uuid="e618df8d-195b-4354-94b2-0f5a28ad1011"/>
+			</line>
+		</band>
+	</pageHeader>
+	
+    <columnHeader>
+		<band height="35" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="277" height="35" forecolor="#FFFFFF" backcolor="#2C3E50" uuid="b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e"/>
+				<box leftPadding="15">
+					<pen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Mapped RS Code]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="277" y="0" width="278" height="35" forecolor="#FFFFFF" backcolor="#2C3E50" uuid="c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"/>
+				<box leftPadding="15">
+					<pen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Count]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	
+    <detail>
+		<band height="30" splitType="Stretch">
+            <!-- Background element for Zebra Style -->
+            <frame>
+				<reportElement style="Zebra" x="0" y="0" width="555" height="30" uuid="0cf101a8-c89b-430b-93ff-1ea4ca7ffcc2"/>
+                <!-- Bottom border line between rows -->
+                <line>
+                    <reportElement x="0" y="29" width="555" height="1" forecolor="#E5E7E9" uuid="293ab5d4-e91e-4ce1-86de-7b0a7b1b3fb2"/>
+                </line>
+                <textField textAdjust="StretchHeight" isBlankWhenNull="true">
+                    <reportElement x="0" y="0" width="277" height="30" uuid="1a2b3c4d-5e6f-7a8b-9c0d-e1f2a3b4c5d6"/>
+                    <box leftPadding="15" rightPadding="10">
+                        <pen lineWidth="0.0"/>
+                    </box>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$F{mapped_rs_code}]]></textFieldExpression>
+                </textField>
+                <textField textAdjust="StretchHeight" isBlankWhenNull="true">
+                    <reportElement x="277" y="0" width="278" height="30" uuid="2b3c4d5e-6f7a-8b9c-0d1e-f2a3b4c5d6e7"/>
+                    <box leftPadding="15" rightPadding="10">
+                        <pen lineWidth="0.0"/>
+                    </box>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$F{count}]]></textFieldExpression>
+                </textField>
+            </frame>
+		</band>
+	</detail>
+	
+    <pageFooter>
+		<band height="50" splitType="Stretch">
+            <line>
+				<reportElement x="0" y="5" width="555" height="1" forecolor="#BDC3C7" uuid="3321528f-78c7-43ca-a9dc-1c6cc8c8ce75"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="435" y="15" width="80" height="20" forecolor="#7F8C8D" uuid="ed791550-ab1b-4fd5-9279-99a32c32cfce"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="515" y="15" width="40" height="20" forecolor="#7F8C8D" uuid="9342557e-e263-41dc-baeb-3c81e8b4e7ce"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="15" width="250" height="20" forecolor="#7F8C8D" uuid="45ccf10b-6a9c-4999-9b7e-927ac0f10c13"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<text><![CDATA[CRIS Confidential - System Generated Report]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	
+    <summary>
+		<band height="80" splitType="Stretch">
+            <rectangle>
+				<reportElement x="0" y="20" width="555" height="40" backcolor="#ECF0F1" uuid="bb3cf3ce-b3ed-4a7a-8d77-628d6c7ee3e6"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#BDC3C7"/>
+				</graphicElement>
+			</rectangle>
+            <staticText>
+				<reportElement x="15" y="20" width="200" height="40" forecolor="#34495E" uuid="2a84e554-4bd2-494b-a796-0cbeaf9ad960"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Count:]]></text>
+			</staticText>
+            <textField>
+				<reportElement x="215" y="20" width="100" height="40" forecolor="#27AE60" uuid="7cf424d5-fbfa-450f-a496-d88ce8c0fcf0"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TotalRecords}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

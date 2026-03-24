@@ -16,6 +16,11 @@ def index(request):
     """
     return render(request, 'reportsapp/index.html')
 
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
+
+@csrf_exempt
+@xframe_options_exempt
 def generate_report(request):
     """
     Generate Jasper PDF Report and return it to the user.

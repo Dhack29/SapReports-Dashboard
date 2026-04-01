@@ -194,3 +194,131 @@ def dashboard_view(request):
     }
     
     return render(request, 'reportsapp/dashboard.html', context)
+
+def time_analysis_view(request):
+    """
+    Render time analysis dashboard fetching the 4 lifecycle stages.
+    """
+    with connection.cursor() as cursor:
+        filter_map = {
+            'mu': 'pu_zone',
+            'rs': 'mapped_rs_code',
+            'pl': 'part_no',
+            'zone': 'zone',
+            'depot': '"Depot/Shed"',
+            'year': 'wra_year',
+        }
+        
+        where_clauses = [
+            "wradate IS NOT NULL", 
+            "wradate != ''", 
+            "sup_date IS NOT NULL", 
+            "acceptance_date IS NOT NULL", 
+            "crn_date IS NOT NULL", 
+            "date_resolution IS NOT NULL"
+        ]
+        params = []
+        for key, col in filter_map.items():
+            val = request.GET.get(key)
+            if val:
+                where_clauses.append(f"{col} = %s")
+                params.append(val)
+                
+        month_val = request.GET.get('month')
+        if month_val and '-' in month_val:
+            y, m_str = month_val.split('-')
+            import calendar
+            month_map = {v: k for k, v in enumerate(calendar.month_abbr) if k}
+            m = month_map.get(m_str)
+            if m:
+                where_clauses.append("wra_year = %s AND wra_month = %s")
+                params.extend([y, float(m)])
+            
+        where_stmt = "WHERE " + " AND ".join(where_clauses)
+        
+        # 1. KPIs
+        cursor.execute(f"SELECT AVG(sup_date - TO_DATE(wradate, 'DD-MM-YYYY')), AVG(acceptance_date - sup_date), AVG(crn_date - acceptance_date), AVG(date_resolution - crn_date), AVG(date_resolution - TO_DATE(wradate, 'DD-MM-YYYY')), COUNT(*) FROM warranty_dipek {where_stmt}", params)
+        kpi_row = cursor.fetchone()
+        avg_lodge = float(kpi_row[0] or 0)
+        avg_accept = float(kpi_row[1] or 0)
+        avg_wra = float(kpi_row[2] or 0)
+        avg_res = float(kpi_row[3] or 0)
+        avg_overall = float(kpi_row[4] or 0)
+        total_claims = int(kpi_row[5] or 0)
+
+        def dictfetchall(cursor):
+            from decimal import Decimal
+            columns = [col[0] for col in cursor.description]
+            rows = []
+            for row in cursor.fetchall():
+                row_dict = {}
+                for idx, col in enumerate(columns):
+                    val = row[idx]
+                    if isinstance(val, Decimal):
+                        val = float(val)
+                    row_dict[col] = val
+                rows.append(row_dict)
+            return rows
+
+        time_selects = "AVG(sup_date - TO_DATE(wradate, 'DD-MM-YYYY')) as lodge, AVG(acceptance_date - sup_date) as accept, AVG(crn_date - acceptance_date) as wra, AVG(date_resolution - crn_date) as res, AVG(date_resolution - TO_DATE(wradate, 'DD-MM-YYYY')) as overall"
+        
+        # 2. MU 
+        cursor.execute(f"SELECT pu_zone as label, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY pu_zone ORDER BY overall DESC", params)
+        mu_wise = dictfetchall(cursor)
+        
+        # 3. RS
+        cursor.execute(f"SELECT mapped_rs_code as label, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY mapped_rs_code ORDER BY overall DESC LIMIT 10", params)
+        rs_wise = dictfetchall(cursor)
+        
+        # 4. PL
+        cursor.execute(f"SELECT part_no as label, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY part_no ORDER BY overall DESC LIMIT 10", params)
+        pl_wise = dictfetchall(cursor)
+        
+        # 5. Zone
+        cursor.execute(f"SELECT zone as label, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY zone ORDER BY overall DESC", params)
+        zone_wise = dictfetchall(cursor)
+        
+        # 6. Depot
+        cursor.execute(f"SELECT \"Depot/Shed\" as label, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY \"Depot/Shed\" ORDER BY overall DESC LIMIT 15", params)
+        depot_wise = dictfetchall(cursor)
+        
+        # 8. Year
+        cursor.execute(f"SELECT wra_year as label, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY wra_year ORDER BY wra_year", params)
+        year_wise = dictfetchall(cursor)
+        
+        # 9. Month
+        import calendar
+        cursor.execute(f"SELECT wra_year, wra_month, {time_selects} FROM warranty_dipek {where_stmt} GROUP BY wra_year, wra_month ORDER BY wra_year, wra_month", params)
+        month_rows = dictfetchall(cursor)
+        month_wise = []
+        for r in month_rows:
+            label = f"{int(r['wra_year']) if r['wra_year'] else ''}-{calendar.month_abbr[int(r['wra_month'])] if r['wra_month'] else ''}"
+            month_wise.append({
+                "label": label,
+                "lodge": r["lodge"],
+                "accept": r["accept"],
+                "wra": r["wra"],
+                "res": r["res"],
+                "overall": r["overall"]
+            })
+            
+    context = {
+        'avg_lodge': round(avg_lodge, 2),
+        'avg_accept': round(avg_accept, 2),
+        'avg_wra': round(avg_wra, 2),
+        'avg_res': round(avg_res, 2),
+        'avg_overall': round(avg_overall, 2),
+        'total_claims': total_claims,
+        
+        'mu_wise_json': json.dumps(mu_wise),
+        'rs_wise_json': json.dumps(rs_wise),
+        'pl_wise_json': json.dumps(pl_wise),
+        'zone_wise_json': json.dumps(zone_wise),
+        'depot_wise_json': json.dumps(depot_wise),
+        'year_wise_json': json.dumps(year_wise),
+        'month_wise_json': json.dumps(month_wise),
+        
+        'active_filters': request.GET.dict(),
+    }
+    
+    return render(request, 'reportsapp/time_dashboard.html', context)
